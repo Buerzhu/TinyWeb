@@ -16,6 +16,18 @@
 	
 * **开始运行**
 
+	**(1).**下载程序;
+
+	`git clone git@github.com:Buerzhu/TinyWeb.git`
 	
-		
+	**(2).**打开新终端，指定ip地址和端口运行服务器程序：
+
+	`cd ~/TinyWeb/Server/Codes`
+
+	`./server 127.0.0.1 12345`
 	
+	**(3).**打开新终端，指定ip地址、端口、客户连接数运行压力测试程序：
+	
+	`cd ~/TinyWeb/Client/Codes`
+	
+	`./client 127.0.0.1 12345 1000`
