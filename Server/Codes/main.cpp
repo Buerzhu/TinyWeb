@@ -114,28 +114,32 @@ void deal_sig_recv(bool& stop)//主线程处理系统信号
 
 int main(int argc, char *argv[])
 {
-    if(argc<=2)
-    {
-        fprintf(stderr,"usage: %s ip_address port\n",argv[0]);;
-        exit(1);
-    }
-
-    //    char* ip="127.0.0.1";
-    //    char* port="12345";
-    char* ip=argv[1];
-    char* port=argv[2];
+//    if(argc<=2)
+//    {
+//        fprintf(stderr,"usage: %s ip_address port\n",argv[0]);;
+//        exit(1);
+//    }
+//    char* ip=argv[1];
+//    char* port=argv[2];
+      char* ip="127.0.0.1";
+      char* port="12346";
 
     int listenfd=open_listenfd(ip,port,LISTENQ);
 
     thread_ptr=new webthread<http_conn>[thread_num];
     webthread<http_conn>::listenfd=listenfd;
 
+    pthread_mutex_init(&mutex_conn,NULL);
 
     create_son_thread();//创建子线程，子线程开始运行
 
     int epollfd = epoll_create( 5 );
     assert( epollfd != -1 );
-    addfd(epollfd,listenfd);
+
+    addfd(epollfd,listenfd,true);
+    webthread<http_conn>::m_epollfd=epollfd;
+
+
 
     int ret = socketpair( PF_UNIX, SOCK_STREAM, 0, sig_pipefd );//创建信号处理函数与主函数之间的通信管道
     assert( ret != -1 );
@@ -152,12 +156,14 @@ int main(int argc, char *argv[])
     epoll_event events[MAX_EVENT_NUM];
 
 
-
+    int m_pid=(int)getpid();
+    printf("PID: %d\n",m_pid);
     printf("server start\n");
     alarm(ALARM_TIME);//开始定时
 
     bool stop=false;
     int thread_index=0;
+
     while(!stop)
     {
         int number=epoll_wait(epollfd,events,MAX_EVENT_NUM,-1);
@@ -193,7 +199,8 @@ int main(int argc, char *argv[])
     Close(sig_pipefd[1]);
     Close(sig_pipefd[0]);
     delete [] thread_ptr;
-    printf("user_count: %d\n",(int)user_count);//C++11,检查当前所有连接是否关闭
+    printf("max_user_online: %d\n",(int)max_user_online);//最大客户端连接数
+    printf("user_online_now: %d\n",(int)user_count);//C++11,检查当前所有连接是否关闭
     show_sys_time();
     printf("closed server.\n");
 
