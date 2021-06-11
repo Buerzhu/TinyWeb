@@ -211,6 +211,9 @@ void webthread<T>::work()
                 while(!timer_queue.empty())
                 {
                     util_timer* timer_temp=timer_queue.top();
+                    timer_queue.pop();
+                    timer_queue.push(timer_temp);
+                    timer_temp=timer_queue.top();//由于指针指向的元素值发生改变，需要重排元素
                     time_t t=time(NULL);
                     if(timer_temp->free)//如果定时器关联的连接已关闭，则释放定时器占用的空间
                     {
